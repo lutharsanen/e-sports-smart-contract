@@ -1,6 +1,10 @@
-pragma solidity>0.4.99;
+/* use compiler 0.426+commit */
 
-contract Betting{
+pragma solidity>0.4.25;
+
+import "github.com/provable-things/ethereum-api/blob/master/oraclizeAPI_0.4.25.sol";
+
+contract Betting is OraclizeI{
     /**
     @param minimumBet amount of minimal bet value
     @param totalBetOne is the total amount which is betted for team A
@@ -8,7 +12,7 @@ contract Betting{
     @param numberOfBets is the total number of incoming bets
     @param maxAmountOfBets is the maximal Number of bets allowed for a game
     **/
-    address payable public owner;
+    address public owner;
     uint256 public minimumBet;
     uint256 public totalBetOne;
     uint256 public totalBetTwo;
@@ -36,7 +40,7 @@ contract Betting{
     /**
     @param players stores the structs of the players in an array
     */
-    address payable[] public players;
+    address[] public players;
     /**
     @param games stores the structs of games in an array
     */
