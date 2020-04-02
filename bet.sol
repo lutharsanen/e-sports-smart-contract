@@ -51,7 +51,6 @@ contract Betting is OraclizeI{
     @notice maps the address of of the array to the Player's struct
     */
     mapping(address=> Player) public playerInfo;
-    
     constructor() public {
         // we could stil vary this value
         owner = msg.sender;
