@@ -5,6 +5,10 @@ pragma solidity>0.4.25;
 import "github.com/provable-things/ethereum-api/blob/master/oraclizeAPI_0.4.25.sol";
 
 contract Betting is OraclizeI{
+
+
+//++++++++++++++++++++++++ global vairables +++++++++++++++++
+
     /**
     @param minimumBet amount of minimal bet value
     @param totalBetOne is the total amount which is betted for team A
@@ -14,59 +18,54 @@ contract Betting is OraclizeI{
     **/
     address public owner;
     uint256 public minimumBet;
-    uint256 public totalBetOne;
-    uint256 public totalBetTwo;
-    uint256 public numberOfBets;
-    // we could still vary this value
     uint256 maxAmountOfBets = 1000;
 
-    /**
-    @notice stores all player addresses
-    @param amountBet is bet amount used to bet
-    @param teamSelected is the team the player selected
-    */
+//++++++++++++++++++++++++ structs +++++++++++++++++++++++++++
+    
+    struct Teams {
+        uint256 totalBetOne;
+        uint256 totalBetTwo;
+        uint256 numberOfBets;
+    }
+
     struct Player {
         uint256 amountBet;
         uint16 teamSelected;
     }
-     /**
-    @notice stores all games of the CL
-    */
-    struct Games {
-        uint teamA;
-        uint teamB;
-        uint result;
-    }
-    /**
-    @param players stores the structs of the players in an array
-    */
+
+//++++++++++++++++++++++++ events +++++++++++++++++++++++++++
+    
+    event GameInfo (
+        uint gameID,
+
+
+    );
+
+//++++++++++++++++++++++++ arrays +++++++++++++++++++++++++++
+
+
     address[] public players;
-    /**
-    @param games stores the structs of games in an array
-    */
-    Games[] games;
+    Games[] public games;
 
+//++++++++++++++++++++++++ mapping +++++++++++++++++++++++++++
 
-    /**
-    @notice maps the address of of the array to the Player's struct
-    */
     mapping(address=> Player) public playerInfo;
+    mapping(uint =>Teams) public teamsInfo;
+    
+//++++++++++++++++++++++++ functions +++++++++++++++++++++++++++
+
     constructor() public {
         // we could stil vary this value
         owner = msg.sender;
         minimumBet = 10000000000000000000;
     }
 
-    /**
-    @notice kills the contract with the selfdestruct function
-    */
+
     function kill() public {
       if(msg.sender == owner) selfdestruct(owner);
     }
 
-    /**
-    @notice  checks if player exists
-    */
+    /* checks if a player has already betted for a game */
     function checkPlayerExists(address player) public view returns (bool){
         for (uint256 i = 0; i < players.length; i++){
             if (players[i] == player){
@@ -74,10 +73,14 @@ contract Betting is OraclizeI{
             }    
         } return false;
     }
-    /**
-    @notice  function for betting
-    */
-    function bet (uint8 _teamSelected) public payable{
+    
+    function _createNewGame( uint _gameid) private {
+        require (msg.sender == owner);
+        uint gameID = games.push(Zombie(_name, _dna)) - 1;
+        emit GameInfo(gameID);
+    }
+    
+    function bet(uint8 _teamSelected) public payable{
         require(!checkPlayerExists(msg.sender));
         require( msg.value >= minimumBet);
         playerInfo[msg.sender].amountBet = msg.value;
