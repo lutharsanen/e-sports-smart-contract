@@ -1,10 +1,10 @@
-/* use compiler 0.426+commit */
+/* use compiler 0.5.17 */
 
-pragma solidity>0.4.25;
+pragma solidity >= 0.5.0 < 0.6.0;
 
-import "github.com/provable-things/ethereum-api/blob/master/oraclizeAPI_0.4.25.sol";
+import "https://github.com/provable-things/ethereum-api/blob/master/provableAPI_0.5.sol";
 
-contract Betting is OraclizeI{
+contract Betting is usingProvable{
 
 
 //++++++++++++++++++++++++ global vairables +++++++++++++++++
@@ -21,24 +21,28 @@ contract Betting is OraclizeI{
     uint256 maxAmountOfBets = 1000;
 
 //++++++++++++++++++++++++ structs +++++++++++++++++++++++++++
-    
-    struct Teams {
+
+    struct Player {
+        uint16 playerid;
+        uint256 amountBet;
+        uint16 teamSelected;
+    }
+
+    struct Games {
+        uint16 teamid;
+        string TeamA;
+        string TeamB;
         uint256 totalBetOne;
         uint256 totalBetTwo;
         uint256 numberOfBets;
-    }
-
-    struct Player {
-        uint256 amountBet;
-        uint16 teamSelected;
     }
 
 //++++++++++++++++++++++++ events +++++++++++++++++++++++++++
     
     event GameInfo (
         uint gameID,
-
-
+        string TeamA,
+        string TeamB
     );
 
 //++++++++++++++++++++++++ arrays +++++++++++++++++++++++++++
@@ -50,7 +54,7 @@ contract Betting is OraclizeI{
 //++++++++++++++++++++++++ mapping +++++++++++++++++++++++++++
 
     mapping(address=> Player) public playerInfo;
-    mapping(uint =>Teams) public teamsInfo;
+    mapping(uint=> Player) public matchInfo;
     
 //++++++++++++++++++++++++ functions +++++++++++++++++++++++++++
 
@@ -74,13 +78,13 @@ contract Betting is OraclizeI{
         } return false;
     }
     
-    function _createNewGame( uint _gameid) private {
+    function _createNewGame( string memory _teamA, string memory _teamB) private {
         require (msg.sender == owner);
-        uint gameID = games.push(Zombie(_name, _dna)) - 1;
-        emit GameInfo(gameID);
+        uint gameID = games.push(Games(_teamA, _teamB)) - 1;
+        emit GameInfo(gameID,_teamA,_teamB);
     }
     
-    function bet(uint8 _teamSelected) public payable{
+    function bet(uint8 _teamSelected, uint _game) public payable{
         require(!checkPlayerExists(msg.sender));
         require( msg.value >= minimumBet);
         playerInfo[msg.sender].amountBet = msg.value;
