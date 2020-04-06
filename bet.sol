@@ -23,19 +23,18 @@ contract Betting is usingProvable{
 //++++++++++++++++++++++++ structs +++++++++++++++++++++++++++
 
     struct Player {
-        uint16 playerid;
         uint256 amountBet;
         uint16 teamSelected;
     }
 
     struct Games {
-        uint16 teamid;
         string TeamA;
         string TeamB;
         uint256 totalBetOne;
         uint256 totalBetTwo;
         uint256 numberOfBets;
     }
+
 
 //++++++++++++++++++++++++ events +++++++++++++++++++++++++++
     
@@ -53,15 +52,19 @@ contract Betting is usingProvable{
 
 //++++++++++++++++++++++++ mapping +++++++++++++++++++++++++++
 
+    /* user-address -> Player */
     mapping(address=> Player) public playerInfo;
+    /* gameID -> Game */
+    mapping(uint=> Game) public betInfo;
+    /* gameID -> Player */
     mapping(uint=> Player) public matchInfo;
-    
 //++++++++++++++++++++++++ functions +++++++++++++++++++++++++++
 
     constructor() public {
         // we could stil vary this value
         owner = msg.sender;
-        minimumBet = 10000000000000000000;
+        // value is in wei
+        minimumBet = 10000000;
     }
 
 
@@ -78,23 +81,25 @@ contract Betting is usingProvable{
         } return false;
     }
     
-    function _createNewGame( string memory _teamA, string memory _teamB) private {
+    /* check if there is a function that let the owner pay for the gas */
+    function _createNewGame( string memory _teamA, string memory _teamB) public{
         require (msg.sender == owner);
-        uint gameID = games.push(Games(_teamA, _teamB)) - 1;
+        uint gameID = games.push(Games(_teamA, _teamB, 0, 0, 0)) - 1;
+        betInfo[gameID] = Games(_teamA, _teamB, 0, 0, 0);
         emit GameInfo(gameID,_teamA,_teamB);
     }
     
-    function bet(uint8 _teamSelected, uint _game) public payable{
+    function bet(uint8 _teamSelected, uint _gameID) public payable{
         require(!checkPlayerExists(msg.sender));
         require( msg.value >= minimumBet);
         playerInfo[msg.sender].amountBet = msg.value;
         playerInfo[msg.sender].teamSelected = _teamSelected;
         players.push(msg.sender);
         if (_teamSelected == 1){
-            totalBetOne+=msg.value;
+            betInfo[_gameID].totalBetOne+=msg.value;
         }
         else{
-            totalBetTwo+=msg.value;
+            betInfo[_gameID].totalBetTwo+=msg.value;
         }
         
     }
@@ -108,11 +113,11 @@ contract Betting is usingProvable{
     
     
     
-    function AmountOne() external view returns(uint256){
-        return totalBetOne;
+    function AmountOne(uint gameID) external view returns(uint256){
+        return betInfo[_gameID].totalBetOne;
     }
-    function AmountTwo() external view returns(uint256){
-        return totalBetTwo;
+    function AmountTwo(uint gameID) external view returns(uint256){
+        return betInfo[_gameID].totalBetTwo;
     }
         
 }
