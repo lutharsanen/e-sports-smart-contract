@@ -19,6 +19,15 @@ contract Betting is usingProvable{
     address public owner;
     uint256 public minimumBet;
     uint256 maxAmountOfBets = 1000;
+    
+    
+    /* variables for the useage of provableAPI */
+    string public ESPORTSRESULT;
+    mapping(bytes32=>bool) validIds;
+    event LogConstructorInitiated(string nextStep);
+    event LogPriceUpdated(string price);
+    event LogNewProvableQuery(string description);
+
 
 //++++++++++++++++++++++++ structs +++++++++++++++++++++++++++
 
@@ -55,7 +64,7 @@ contract Betting is usingProvable{
     /* user-address -> Player */
     mapping(address=> Player) public playerInfo;
     /* gameID -> Game */
-    mapping(uint=> Game) public betInfo;
+    mapping(uint=> Games) public betInfo;
     /* gameID -> Player */
     mapping(uint=> Player) public matchInfo;
 //++++++++++++++++++++++++ functions +++++++++++++++++++++++++++
@@ -65,12 +74,11 @@ contract Betting is usingProvable{
         owner = msg.sender;
         // value is in wei
         minimumBet = 10000000;
+        // initiate ProvableAPI
+        provable_setCustomGasPrice(4000000000);
+        emit LogConstructorInitiated("Constructor was initiated. Call 'updatePrice()' to send the Provable Query.");
     }
 
-
-    function kill() public {
-      if(msg.sender == owner) selfdestruct(owner);
-    }
 
     /* checks if a player has already betted for a game */
     function checkPlayerExists(address player) public view returns (bool){
@@ -104,20 +112,34 @@ contract Betting is usingProvable{
         
     }
     
-    function get_Data() public {
-        
 
-
+    function __callback(bytes32 myid, string memory result) public {
+        if (!validIds[myid]) revert();
+        if (msg.sender != provable_cbAddress()) revert();
+        ESPORTSRESULT = result;
+        emit LogPriceUpdated(result);
+        delete validIds[myid];
+        updatePrice();
     }
-    
+
+    function updatePrice() public payable {
+        if (provable_getPrice("URL") > this.balance) {
+          emit LogNewProvableQuery("Provable query was NOT sent, please add some ETH to cover for the query fee");
+        } else {
+          emit LogNewProvableQuery("Provable query was sent, standing by for the answer..");
+            bytes32 queryId =
+                provable_query(60, "URL", "json(https://api.pro.coinbase.com/products/ETH-USD/ticker).price", 500000);
+            validIds[queryId] = true;
+        }
+    }
     
     
     
     function AmountOne(uint gameID) external view returns(uint256){
-        return betInfo[_gameID].totalBetOne;
+        return betInfo[gameID].totalBetOne;
     }
     function AmountTwo(uint gameID) external view returns(uint256){
-        return betInfo[_gameID].totalBetTwo;
+        return betInfo[gameID].totalBetTwo;
     }
         
 }
