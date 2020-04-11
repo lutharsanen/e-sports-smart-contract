@@ -1,0 +1,16 @@
+{
+  "name": "server",
+  "version": "1.0.0",
+  "description": "Simple Node.js server for communicating to our ethereum smart contract",
+  "main": "index.js",
+  "dependencies": {
+    "express": "^4.17.1",
+    "web3": "^1.2.6"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "dev": "node index.js"
+  },
+  "author": "",
+  "license": "ISC"
+}
