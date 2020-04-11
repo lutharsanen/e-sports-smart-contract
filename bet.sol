@@ -75,7 +75,6 @@ contract Betting is usingProvable{
         // value is in wei
         minimumBet = 10000000;
         // initiate ProvableAPI
-        provable_setCustomGasPrice(4000000000);
         emit LogConstructorInitiated("Constructor was initiated. Call 'updatePrice()' to send the Provable Query.");
     }
 
@@ -123,7 +122,7 @@ contract Betting is usingProvable{
     }
 
     function updatePrice() public payable {
-        if (provable_getPrice("URL") > this.balance) {
+        if (provable_getPrice("URL") > 0) {
           emit LogNewProvableQuery("Provable query was NOT sent, please add some ETH to cover for the query fee");
         } else {
           emit LogNewProvableQuery("Provable query was sent, standing by for the answer..");
