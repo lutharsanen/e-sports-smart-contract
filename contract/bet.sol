@@ -2,7 +2,7 @@
 
 pragma solidity >= 0.5.0 < 0.6.0;
 
-import "https://github.com/provable-things/ethereum-api/blob/master/provableAPI_0.5.sol";
+import "./provableAPI_0.5.sol";
 
 contract Betting is usingProvable{
 
