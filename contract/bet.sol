@@ -19,6 +19,7 @@ contract Betting is usingProvable{
     address public owner;
     uint256 public minimumBet;
     uint256 maxAmountOfBets = 1000;
+    uint128 private initializationfee = 2 ether;
     
     
     /* variables for the useage of provableAPI */
@@ -31,7 +32,7 @@ contract Betting is usingProvable{
 
 //++++++++++++++++++++++++ structs +++++++++++++++++++++++++++
 
-    struct Player {
+    struct PlayerInformation {
         uint256 amountBet;
         uint16 teamSelected;
     }
@@ -39,9 +40,13 @@ contract Betting is usingProvable{
     struct Games {
         string TeamA;
         string TeamB;
-        uint256 totalBetOne;
-        uint256 totalBetTwo;
-        uint256 numberOfBets;
+        uint256 totalBetA;
+        uint256 totalBetB;
+        uint256 totalAmount;
+    }
+    
+    struct Player{
+        address playeraddress;
     }
 
 
@@ -56,20 +61,27 @@ contract Betting is usingProvable{
 //++++++++++++++++++++++++ arrays +++++++++++++++++++++++++++
 
 
-    address[] public players;
+    //Player[] public players;
     Games[] public games;
+
 
 //++++++++++++++++++++++++ mapping +++++++++++++++++++++++++++
 
-    /* user-address -> Player */
-    mapping(address=> Player) public playerInfo;
+
+    /* gameID -> user-address -> Player */
+    mapping(uint => mapping(address=> PlayerInformation)) public playerInfo;
+    /* gameID -> address */
+    mapping(uint => Player[]) public addressInfo;
     /* gameID -> Game */
     mapping(uint=> Games) public betInfo;
     /* gameID -> Player */
     mapping(uint=> Player) public matchInfo;
-//++++++++++++++++++++++++ functions +++++++++++++++++++++++++++
+    
+    
+//++++++++++++++++++++++++ logical functions +++++++++++++++++++++++++++
 
-    constructor() public {
+    constructor() public payable {
+        require(msg.value >= initializationfee);
         // we could stil vary this value
         owner = msg.sender;
         // value is in wei
@@ -78,18 +90,17 @@ contract Betting is usingProvable{
         emit LogConstructorInitiated("Constructor was initiated. Call 'updatePrice()' to send the Provable Query.");
     }
 
-
     /* checks if a player has already betted for a game */
-    function checkPlayerExists(address player) public view returns (bool){
-        for (uint256 i = 0; i < players.length; i++){
-            if (players[i] == player){
+    function checkPlayerExists(address player, uint gameID) public view returns (bool){
+        for (uint256 i = 0; i < addressInfo[gameID].length; i++){
+            if (addressInfo[gameID][i].playeraddress == player){
                 return true;
             }    
         } return false;
     }
     
     /* check if there is a function that let the owner pay for the gas */
-    function _createNewGame( string memory _teamA, string memory _teamB) public{
+    function createNewGame( string memory _teamA, string memory _teamB) public{
         require (msg.sender == owner);
         uint gameID = games.push(Games(_teamA, _teamB, 0, 0, 0)) - 1;
         betInfo[gameID] = Games(_teamA, _teamB, 0, 0, 0);
@@ -97,20 +108,35 @@ contract Betting is usingProvable{
     }
     
     function bet(uint8 _teamSelected, uint _gameID) public payable{
-        require(!checkPlayerExists(msg.sender));
+        require(!checkPlayerExists(msg.sender,_gameID));
         require( msg.value >= minimumBet);
-        playerInfo[msg.sender].amountBet = msg.value;
-        playerInfo[msg.sender].teamSelected = _teamSelected;
-        players.push(msg.sender);
-        if (_teamSelected == 1){
-            betInfo[_gameID].totalBetOne+=msg.value;
+        playerInfo[_gameID][msg.sender].amountBet = msg.value;
+        playerInfo[_gameID][msg.sender].teamSelected = _teamSelected;
+        addressInfo[_gameID].push(Player(msg.sender));
+        if (_teamSelected == 0){
+            betInfo[_gameID].totalBetA+=msg.value;
         }
-        else{
-            betInfo[_gameID].totalBetTwo+=msg.value;
+        else if (_teamSelected == 1){
+            betInfo[_gameID].totalBetB+=msg.value;
         }
-        
+        betInfo[_gameID].totalAmount +=msg.value;
     }
     
+    function _payout(uint _winner, uint _gameID) private {
+        for (uint256 i = 0; i < addressInfo[_gameID].length; i++){
+            address betaddress = addressInfo[_gameID][i].playeraddress;
+            if (_winner == playerInfo[_gameID][betaddress].teamSelected){
+                // no percentages available in solidity how to solve that?
+                //uint winparticipation = playerInfo[_gameID][betaddress].amountBet/getWinnerAmount(_winner, _gameID);
+                
+                    
+                }
+            }
+    } 
+    
+
+//++++++++++++++++++++++++ provable functions +++++++++++++++++++++++++++
+
 
     function __callback(bytes32 myid, string memory result) public {
         if (!validIds[myid]) revert();
@@ -132,13 +158,29 @@ contract Betting is usingProvable{
         }
     }
     
+//++++++++++++++++++++++++ view functions +++++++++++++++++++++++++++
     
     
-    function AmountOne(uint gameID) external view returns(uint256){
-        return betInfo[gameID].totalBetOne;
+    function getAmountTeamA(uint gameID) external view returns(uint256){
+        return betInfo[gameID].totalBetA;
     }
-    function AmountTwo(uint gameID) external view returns(uint256){
-        return betInfo[gameID].totalBetTwo;
+    
+    function getAmountTeamB(uint gameID) external view returns(uint256){
+        return betInfo[gameID].totalBetB;
+    }
+    
+    function getTotalAmount(uint gameID) external view returns(uint256){
+        return betInfo[gameID].totalAmount;
+    }
+    
+    function getBalance() external view returns (uint) {
+        require(msg.sender == owner);
+        return address(this).balance;
+    }
+
+    function getWinnerAmount(uint winner, uint gameID) external view returns(uint256){
+        if (winner == 0) return betInfo[gameID].totalBetA;
+        else return betInfo[gameID].totalBetB;
     }
         
 }
