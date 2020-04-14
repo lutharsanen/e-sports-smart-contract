@@ -122,12 +122,17 @@ contract Betting is usingProvable{
         betInfo[_gameID].totalAmount +=msg.value;
     }
     
+
     function _payout(uint _winner, uint _gameID) private {
+        uint totalAmount = getTotalAmount(_gameID);
         for (uint256 i = 0; i < addressInfo[_gameID].length; i++){
             address betaddress = addressInfo[_gameID][i].playeraddress;
             if (_winner == playerInfo[_gameID][betaddress].teamSelected){
-                // no percentages available in solidity how to solve that?
-                //uint winparticipation = playerInfo[_gameID][betaddress].amountBet/getWinnerAmount(_winner, _gameID);
+                uint winnerAmount = getWinnerAmount(_winner, _gameID);
+                uint winparticipation = uint(playerInfo[_gameID][betaddress].amountBet)* uint(100000) /uint(winnerAmount);
+                uint amountWon = uint(winparticipation) * uint(totalAmount) / uint(100000);
+                betaddress.transfer(amountWon);
+                
                 
                     
                 }
@@ -161,15 +166,15 @@ contract Betting is usingProvable{
 //++++++++++++++++++++++++ view functions +++++++++++++++++++++++++++
     
     
-    function getAmountTeamA(uint gameID) external view returns(uint256){
+    function getAmountTeamA(uint gameID) public view returns(uint256){
         return betInfo[gameID].totalBetA;
     }
     
-    function getAmountTeamB(uint gameID) external view returns(uint256){
+    function getAmountTeamB(uint gameID) public view returns(uint256){
         return betInfo[gameID].totalBetB;
     }
     
-    function getTotalAmount(uint gameID) external view returns(uint256){
+    function getTotalAmount(uint gameID) public view returns(uint256){
         return betInfo[gameID].totalAmount;
     }
     
@@ -178,9 +183,13 @@ contract Betting is usingProvable{
         return address(this).balance;
     }
 
-    function getWinnerAmount(uint winner, uint gameID) external view returns(uint256){
-        if (winner == 0) return betInfo[gameID].totalBetA;
-        else return betInfo[gameID].totalBetB;
+    function getWinnerAmount(uint winner, uint gameID) public view returns(uint256){
+        if (winner == 0){
+            return betInfo[gameID].totalBetA;
+        } 
+        else{
+            return betInfo[gameID].totalBetB;
+        } 
     }
         
 }
