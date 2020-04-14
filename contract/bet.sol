@@ -46,7 +46,7 @@ contract Betting is usingProvable{
     }
     
     struct Player{
-        address playeraddress;
+        address payable playeraddress;
     }
 
 
@@ -126,17 +126,15 @@ contract Betting is usingProvable{
     function _payout(uint _winner, uint _gameID) private {
         uint totalAmount = getTotalAmount(_gameID);
         for (uint256 i = 0; i < addressInfo[_gameID].length; i++){
-            address betaddress = addressInfo[_gameID][i].playeraddress;
+            address payable betaddress = addressInfo[_gameID][i].playeraddress;
             if (_winner == playerInfo[_gameID][betaddress].teamSelected){
                 uint winnerAmount = getWinnerAmount(_winner, _gameID);
                 uint winparticipation = uint(playerInfo[_gameID][betaddress].amountBet)* uint(100000) /uint(winnerAmount);
                 uint amountWon = uint(winparticipation) * uint(totalAmount) / uint(100000);
                 betaddress.transfer(amountWon);
-                
-                
-                    
-                }
+
             }
+        }
     } 
     
 
