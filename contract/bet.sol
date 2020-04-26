@@ -19,7 +19,7 @@ contract Betting is usingProvable{
     address public owner;
     uint256 public minimumBet;
     uint256 maxAmountOfBets = 1000;
-    uint128 private initializationfee = 2 ether;
+    uint128 private initializationfee = 0 ether;
     
     
     /* variables for the useage of provableAPI */
