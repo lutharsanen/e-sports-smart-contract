@@ -1,10 +1,9 @@
 /* use compiler 0.5.17 */
 
-pragma solidity >= 0.5.0 < 0.6.0;
+pragma solidity >= 0.6.0 < 0.7.0;
 
-import "./provableAPI_0.5.sol";
 
-contract Betting is usingProvable{
+contract Betting{
 
 
 //++++++++++++++++++++++++ global vairables +++++++++++++++++
@@ -21,14 +20,6 @@ contract Betting is usingProvable{
     uint256 maxAmountOfBets = 1000;
     uint128 private initializationfee = 0 ether;
     
-    
-    /* variables for the useage of provableAPI */
-    string public ESPORTSRESULT;
-    mapping(bytes32=>bool) validIds;
-    event LogConstructorInitiated(string nextStep);
-    event LogPriceUpdated(string price);
-    event LogNewProvableQuery(string description);
-
 
 //++++++++++++++++++++++++ structs +++++++++++++++++++++++++++
 
@@ -86,8 +77,7 @@ contract Betting is usingProvable{
         owner = msg.sender;
         // value is in wei
         minimumBet = 10000000;
-        // initiate ProvableAPI
-        emit LogConstructorInitiated("Constructor was initiated. Call 'updatePrice()' to send the Provable Query.");
+       
     }
 
     /* checks if a player has already betted for a game */
@@ -100,11 +90,11 @@ contract Betting is usingProvable{
     }
     
     /* check if there is a function that let the owner pay for the gas */
-    function createNewGame( string memory _teamA, string memory _teamB) public{
+    function createNewGame( string memory _teamA, string memory _teamB, uint _gameid) public{
         require (msg.sender == owner);
-        uint gameID = games.push(Games(_teamA, _teamB, 0, 0, 0)) - 1;
-        betInfo[gameID] = Games(_teamA, _teamB, 0, 0, 0);
-        emit GameInfo(gameID,_teamA,_teamB);
+        games.push(Games(_teamA, _teamB, 0, 0, 0));
+        betInfo[_gameid] = Games(_teamA, _teamB, 0, 0, 0);
+        emit GameInfo(_gameid,_teamA,_teamB);
     }
     
     function bet(uint8 _teamSelected, uint _gameID) public payable{
@@ -123,7 +113,8 @@ contract Betting is usingProvable{
     }
     
 
-    function _payout(uint _winner, uint _gameID) private {
+    function _payout(uint _winner, uint _gameID) public {
+        require (msg.sender == owner);
         uint totalAmount = getTotalAmount(_gameID);
         for (uint256 i = 0; i < addressInfo[_gameID].length; i++){
             address payable betaddress = addressInfo[_gameID][i].playeraddress;
@@ -138,30 +129,7 @@ contract Betting is usingProvable{
     } 
     
 
-//++++++++++++++++++++++++ provable functions +++++++++++++++++++++++++++
 
-
-    function __callback(bytes32 myid, string memory result) public {
-        if (!validIds[myid]) revert();
-        if (msg.sender != provable_cbAddress()) revert();
-        ESPORTSRESULT = result;
-        emit LogPriceUpdated(result);
-        delete validIds[myid];
-        updatePrice();
-    }
-
-    function updatePrice() public payable {
-        if (provable_getPrice("URL") > 0) {
-          emit LogNewProvableQuery("Provable query was NOT sent, please add some ETH to cover for the query fee");
-        } else {
-          emit LogNewProvableQuery("Provable query was sent, standing by for the answer..");
-            bytes32 queryId =
-                provable_query(60, "URL", "json(https://api.pro.coinbase.com/products/ETH-USD/ticker).price", 500000);
-            validIds[queryId] = true;
-        }
-    }
-    
-//++++++++++++++++++++++++ view functions +++++++++++++++++++++++++++
     
     
     function getAmountTeamA(uint gameID) public view returns(uint256){
