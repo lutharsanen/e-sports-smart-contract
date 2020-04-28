@@ -2,8 +2,9 @@
 
 pragma solidity >= 0.6.0 < 0.7.0;
 
+import "./Bugiclize.sol";
 
-contract Betting{
+contract Betting is usingBugiclize{
 
 
 //++++++++++++++++++++++++ global vairables +++++++++++++++++
@@ -18,7 +19,6 @@ contract Betting{
     address public owner;
     uint256 public minimumBet;
     uint256 maxAmountOfBets = 1000;
-    uint128 private initializationfee = 0 ether;
     
 
 //++++++++++++++++++++++++ structs +++++++++++++++++++++++++++
@@ -29,8 +29,6 @@ contract Betting{
     }
 
     struct Games {
-        string TeamA;
-        string TeamB;
         uint256 totalBetA;
         uint256 totalBetB;
         uint256 totalAmount;
@@ -40,14 +38,6 @@ contract Betting{
         address payable playeraddress;
     }
 
-
-//++++++++++++++++++++++++ events +++++++++++++++++++++++++++
-    
-    event GameInfo (
-        uint gameID,
-        string TeamA,
-        string TeamB
-    );
 
 //++++++++++++++++++++++++ arrays +++++++++++++++++++++++++++
 
@@ -72,7 +62,6 @@ contract Betting{
 //++++++++++++++++++++++++ logical functions +++++++++++++++++++++++++++
 
     constructor() public payable {
-        require(msg.value >= initializationfee);
         // we could stil vary this value
         owner = msg.sender;
         // value is in wei
@@ -90,11 +79,11 @@ contract Betting{
     }
     
     /* check if there is a function that let the owner pay for the gas */
-    function createNewGame( string memory _teamA, string memory _teamB, uint _gameid) public{
+    function createNewGame( uint _gameid) public returns (uint) {
         require (msg.sender == owner);
-        games.push(Games(_teamA, _teamB, 0, 0, 0));
-        betInfo[_gameid] = Games(_teamA, _teamB, 0, 0, 0);
-        emit GameInfo(_gameid,_teamA,_teamB);
+        games.push(Games( 0, 0, 0));
+        betInfo[_gameid] = Games( 0, 0, 0);
+        return _gameid;
     }
     
     function bet(uint8 _teamSelected, uint _gameID) public payable{
@@ -113,8 +102,9 @@ contract Betting{
     }
     
 
-    function _payout(uint _winner, uint _gameID) public {
+    function _payout(uint _gameID) public {
         require (msg.sender == owner);
+        uint _winner = usingBugiclize.getResult(_gameID);
         uint totalAmount = getTotalAmount(_gameID);
         for (uint256 i = 0; i < addressInfo[_gameID].length; i++){
             address payable betaddress = addressInfo[_gameID][i].playeraddress;
@@ -130,7 +120,6 @@ contract Betting{
     
 
 
-    
     
     function getAmountTeamA(uint gameID) public view returns(uint256){
         return betInfo[gameID].totalBetA;
@@ -157,5 +146,6 @@ contract Betting{
             return betInfo[gameID].totalBetB;
         } 
     }
+
         
 }
