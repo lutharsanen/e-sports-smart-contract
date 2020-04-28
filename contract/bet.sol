@@ -104,7 +104,7 @@ contract Betting is usingBugiclize{
 
     function _payout(uint _gameID) public {
         require (msg.sender == owner);
-        uint _winner = usingBugiclize.getResult(_gameID);
+        uint _winner = usingBugiclize.Bugiclize_getResult(_gameID);
         uint totalAmount = getTotalAmount(_gameID);
         for (uint256 i = 0; i < addressInfo[_gameID].length; i++){
             address payable betaddress = addressInfo[_gameID][i].playeraddress;

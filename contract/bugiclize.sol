@@ -18,28 +18,28 @@ contract usingBugiclize{
     
     
     constructor() public {
-        oracle_owner = msg.sender;
+        oracle_owner = 0x597d39F79E93d9233940e0CD861EA3075587DCB2;
         
     }
     
-    function createGame(uint gameid) public {
+    function Bugiclize_createGame(uint gameid) public {
         require(msg.sender == oracle_owner);
         allgames.push(gameid);
         emit Gamecreated(gameid);
     }
     
-    function updateResult(uint winner, uint gameid) public {
+    function Bugiclize_updateResult(uint winner, uint gameid) public {
         require(msg.sender == oracle_owner);
         gamewinners[gameid] = winner;
         emit Gamefinished(gameid);
     }
     
-    function getstoredGames()public view returns( uint  [] memory){
+    function Bugiclize_getstoredGames()public view returns( uint  [] memory){
         return allgames;
     }
     
     
-    function getResult(uint gameid)public payable returns(uint){
+    function Bugiclize_getResult(uint gameid)public payable returns(uint){
         require(msg.value > 0.5 ether);
         return gamewinners[gameid];
     }
