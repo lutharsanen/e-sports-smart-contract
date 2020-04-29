@@ -9,7 +9,7 @@ const solc = require("solc");
 const providerPort = 8080;
 const url = "ws://127.0.0.1:7545";
 const oracleProvider = "0xeFb4666BA4394AeF0351F24335BD80b2e0c75FE5";
-const oracleContract = "0xF3F21A633339EE49E1A560154DEbc721b3256992";
+const oracleContract = "0xf7742cA9A98EbE9a5d1AFadf7309D21bde66FE01";
 
 // Connect do db
 let db;
@@ -63,15 +63,28 @@ const contract = new web3.eth.Contract(abi, oracleContract);
 const app = express();
 app.use(express.json());
 
-// Get all games that are on oracle smart contract
+// return all games stored off-chain for more information
 app.get("/games", (req, res) => {
-  contract.methods.Bugiclize_getstoredGames().call((err, result) => {
+  games_collection.find({}, (err, games) => {
     if (!err) {
-      res.send(result);
+      games.toArray().then((games_arr) => {
+        res.send(games_arr);
+      });
       return;
     }
-    console.log(err);
     res.send(err);
+    return;
+  });
+});
+
+app.get("/games/:id", (req, res) => {
+  games_collection.findOne({ _id: parseInt(req.params.id) }, (err, game) => {
+    if (!err) {
+      res.send(game);
+      return;
+    }
+    res.send(err);
+    return;
   });
 });
 
@@ -116,7 +129,7 @@ app.post("/games/:id", (req, res) => {
   const id = req.params.id;
 
   games_collection.findOneAndUpdate(
-    { _id: id },
+    { _id: parseInt(id) },
     {
       $set: { winner: winner, end: new Date() },
     },

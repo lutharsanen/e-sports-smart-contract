@@ -114,8 +114,8 @@ app.get("/abi", (req, res) => {
   res.send(abi);
 });
 
+// get certain game from contract
 app.get("/games/:id", (req, res) => {
-  // get certain game from contract
   contract.methods
     .betInfo(req.params.id)
     .call()
@@ -123,6 +123,26 @@ app.get("/games/:id", (req, res) => {
       res.send(result);
     })
     .catch((err) => {
+      res.send(err);
+    });
+});
+
+app.post("/bet", (req, res) => {
+  const { fromAccount, gameId, winner, amount } = req.body;
+
+  contract.methods
+    .bet(winner, gameId)
+    .send({
+      from: fromAccount,
+      value: amount,
+      gas: 6721975,
+    })
+    .then((result) => {
+      console.log(result);
+      res.send(result);
+    })
+    .catch((err) => {
+      console.log(err);
       res.send(err);
     });
 });
