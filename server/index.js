@@ -2,26 +2,24 @@ const Web3 = require("web3");
 const express = require("express");
 const fs = require("fs");
 const solc = require("solc");
-const WebSocket = require("ws");
 
 // global vars
 const backendPort = 3000;
-const providerWebsocket = "wb://localhost:9000";
 const url = "ws://127.0.0.1:7545";
 const owner = "0xaf0831CaBCcBb78168520f3128171B24607e49A2";
 
 // Compile smart contract
-let source = fs.readFileSync("../contract/bet.sol", "utf8");
-let provable = fs.readFileSync("../contract/provableAPI_0.5.sol", "utf8");
+let bettingSource = fs.readFileSync("../contract/bet.sol", "utf8");
+let oracleSource = fs.readFileSync("../contract/bugiclize.sol", "utf8");
 
 var input = {
   language: "Solidity",
   sources: {
     "bet.sol": {
-      content: source,
+      content: bettingSource,
     },
-    "provableAPI_0.5.sol": {
-      content: provable,
+    "bugiclize.sol": {
+      content: oracleSource,
     },
   },
   settings: {
@@ -59,14 +57,44 @@ contract
       value: "1",
     },
     (err, res) => {
-      console.log("contract deployed", res);
+      console.log("tx sent to deploy contract", res);
     }
   )
   .then(function (newContractInstance) {
+    console.log(
+      "new contract deployed at address",
+      newContractInstance._address
+    );
     contract = newContractInstance; // overwrite the "old" intance
+
     // Connect to GameInfo Event
-    contract.events.GameInfo((err, event) => {
-      console.log(event);
+    contract.events.Gamecreated((err, event) => {
+      const createdId = JSON.parse(JSON.stringify(event)).returnValues.gameid;
+      console.log("game created with id", createdId);
+
+      contract.methods
+        .createNewGame(createdId)
+        .send({
+          from: owner,
+          gas: 6721975,
+        })
+        .then((res) => console.log(res))
+        .catch((err) => console.log(err));
+    });
+
+    contract.events.Gamefinished((err, event) => {
+      const finishedId = JSON.parse(JSON.stringify(event)).returnValues.gameid;
+      console.log("game finished with id", finishedId);
+
+      contract.methods
+        ._payout(finishedId)
+        .send({
+          from: owner,
+          gas: 6721975,
+          value: web3.utils.toWei("0.51", "ether"),
+        })
+        .then((res) => console.log(res))
+        .catch((err) => console.log(err));
     });
   })
   .catch((err) => {
@@ -82,36 +110,23 @@ app.get("/owner", (req, res) => {
   res.send(owner);
 });
 
-app.listen(backendPort, () => {
-  console.log(`started server on port ${backendPort}`);
+app.get("/abi", (req, res) => {
+  res.send(abi);
 });
 
-// Connect to provider websockets api
-const ws = new WebSocket(providerWebsocket);
-ws.on("message", (msg) => {
-  console.log(msg);
+app.get("/games/:id", (req, res) => {
+  // get certain game from contract
+  contract.methods
+    .betInfo(req.params.id)
+    .call()
+    .then((result) => {
+      res.send(result);
+    })
+    .catch((err) => {
+      res.send(err);
+    });
+});
 
-  if (msg !== "Welcome to the fake api provider") {
-    const message = JSON.parse(msg);
-
-    const { team1, team2, start, end, winner, _id } = message;
-
-    // Call methods on the contract, create game or update game
-
-    // if no winner == null, it was a game creation. So, call game creation on contract
-
-    if (!winner) {
-      // TODO: Pass id to contract?
-      contract.methods
-        .createNewGame(team1, team2)
-        .send({ from: owner }, (err, res) => {
-          console.log("game created ", res);
-        });
-    }
-
-    // otherwise, it was an update to the contract. Thus, call update
-    else {
-      // TODO: Make call to update
-    }
-  }
+app.listen(backendPort, () => {
+  console.log(`started server on port ${backendPort}`);
 });

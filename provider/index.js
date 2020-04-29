@@ -1,20 +1,15 @@
 const express = require("express");
 const mongo = require("mongodb");
 const MongoClient = mongo.MongoClient;
-const WebSocket = require("ws");
+const Web3 = require("web3");
+const fs = require("fs");
+const solc = require("solc");
 
 // global vars
-const httpPort = 8080;
-const webSocketPort = 9000;
-
-// Creating web socket server
-const wss = new WebSocket.Server({ port: webSocketPort }, () => {
-  console.log(`websocket running at port ${webSocketPort}`);
-});
-
-wss.on("connection", function connection(ws) {
-  ws.send("Welcome to the fake api provider");
-});
+const providerPort = 8080;
+const url = "ws://127.0.0.1:7545";
+const oracleProvider = "0xeFb4666BA4394AeF0351F24335BD80b2e0c75FE5";
+const oracleContract = "0xF3F21A633339EE49E1A560154DEbc721b3256992";
 
 // Connect do db
 let db;
@@ -34,41 +29,59 @@ client.connect((err) => {
   }
 });
 
+// Connect to the blockchain
+const web3 = new Web3(url);
+
+// let bettingSource = fs.readFileSync("../contract/bet.sol", "utf8");
+let oracleSource = fs.readFileSync("../contract/bugiclize.sol", "utf8");
+
+var input = {
+  language: "Solidity",
+  sources: {
+    "bugiclize.sol": {
+      content: oracleSource,
+    },
+  },
+  settings: {
+    outputSelection: {
+      "*": {
+        "*": ["*"],
+      },
+    },
+  },
+};
+
+let compiledContract = JSON.parse(solc.compile(JSON.stringify(input)));
+let abi;
+
+abi = compiledContract.contracts["bugiclize.sol"]["usingBugiclize"].abi;
+
+// Connect to Oracle contract
+const contract = new web3.eth.Contract(abi, oracleContract);
+
 // Setup express and convert payloads to json automatically
 const app = express();
 app.use(express.json());
 
-// Endpoints
+// Get all games that are on oracle smart contract
 app.get("/games", (req, res) => {
-  const games = games_collection.find().toArray((err, result) => {
-    console.log(result);
-    res.send(result);
-  });
-});
-
-app.get("/games/:id", (req, res) => {
-  const id = new mongo.ObjectID(req.params.id);
-  const games = games_collection.find({ _id: id }).toArray((err, result) => {
+  contract.methods.Bugiclize_getstoredGames().call((err, result) => {
     if (!err) {
-      // send to all clients over websockets
-      wss.clients.forEach(function each(client) {
-        if (client.readyState === WebSocket.OPEN) {
-          client.send(JSON.stringify(inserted));
-        }
-      });
-      // send http response to sender of the request
       res.send(result);
+      return;
     }
     console.log(err);
+    res.send(err);
   });
 });
 
 app.post("/games", (req, res) => {
-  const { team1, team2, start } = req.body;
+  const { teamA, teamB, start, id } = req.body;
   games_collection.insertOne(
     {
-      team1: team1,
-      team2: team2,
+      _id: id,
+      teamA,
+      teamB,
       start: new Date(start),
       end: null,
       winner: null,
@@ -76,23 +89,31 @@ app.post("/games", (req, res) => {
     (err, result) => {
       if (!err) {
         const inserted = result.ops[0];
-        // send to all clients over websockets
-        wss.clients.forEach(function each(client) {
-          if (client.readyState === WebSocket.OPEN) {
-            client.send(JSON.stringify(inserted));
-          }
-        });
-        // send http response to sender of the request
-        res.send(inserted);
+        // update contract
+        contract.methods
+          .Bugiclize_createGame(id)
+          .send({
+            from: oracleProvider,
+            gas: 6721975,
+          })
+          .then((result) => {
+            // send http response
+            res.send(inserted);
+          })
+          .catch((err) => {
+            res.send(err);
+          });
+        return;
       }
       console.log(err);
+      res.send(err);
     }
   );
 });
 
 app.post("/games/:id", (req, res) => {
   const { winner } = req.body;
-  const id = new mongo.ObjectID(req.params.id);
+  const id = req.params.id;
 
   games_collection.findOneAndUpdate(
     { _id: id },
@@ -102,15 +123,29 @@ app.post("/games/:id", (req, res) => {
     {
       returnOriginal: false,
     },
-    (err, result) => {
+    (err, updated) => {
       if (!err) {
-        res.send(result.value);
+        contract.methods
+          .Bugiclize_updateResult(winner, id)
+          .send({
+            from: oracleProvider,
+            gas: 6721975,
+          })
+          .then((result) => {
+            // send http response
+            res.send(updated.value);
+          })
+          .catch((err) => {
+            res.send(err);
+          });
+        return;
       }
       console.log(err);
+      res.send(err);
     }
   );
 });
 
-app.listen(httpPort, () => {
-  console.log(`started server on port ${httpPort}`);
+app.listen(providerPort, () => {
+  console.log(`started server on port ${providerPort}`);
 });

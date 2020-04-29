@@ -18,7 +18,7 @@ contract usingBugiclize{
     
     
     constructor() public {
-        oracle_owner = 0x597d39F79E93d9233940e0CD861EA3075587DCB2;
+        oracle_owner = 0xeFb4666BA4394AeF0351F24335BD80b2e0c75FE5;
         
     }
     
@@ -34,12 +34,12 @@ contract usingBugiclize{
         emit Gamefinished(gameid);
     }
     
-    function Bugiclize_getstoredGames()public view returns( uint  [] memory){
+    function Bugiclize_getstoredGames() public view returns( uint  [] memory){
         return allgames;
     }
     
     
-    function Bugiclize_getResult(uint gameid)public payable returns(uint){
+    function Bugiclize_getResult(uint gameid) public payable returns(uint){
         require(msg.value > 0.5 ether);
         return gamewinners[gameid];
     }

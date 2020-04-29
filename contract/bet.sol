@@ -2,7 +2,7 @@
 
 pragma solidity >= 0.6.0 < 0.7.0;
 
-import "./Bugiclize.sol";
+import "./bugiclize.sol";
 
 contract Betting is usingBugiclize{
 
@@ -102,7 +102,7 @@ contract Betting is usingBugiclize{
     }
     
 
-    function _payout(uint _gameID) public {
+    function _payout(uint _gameID) public payable {
         require (msg.sender == owner);
         uint _winner = usingBugiclize.Bugiclize_getResult(_gameID);
         uint totalAmount = getTotalAmount(_gameID);
