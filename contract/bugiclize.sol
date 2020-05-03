@@ -7,8 +7,7 @@ contract usingBugiclize{
     
     address public oracle_owner;
     
-    
-    uint[] public allgames;
+
     
     
     event Gamecreated(uint gameid);
@@ -18,13 +17,12 @@ contract usingBugiclize{
     
     
     constructor() public {
-        oracle_owner = 0xeFb4666BA4394AeF0351F24335BD80b2e0c75FE5;
+        oracle_owner = 0x77d7f9fD92691D56fDd0DBB735eC961840a624A5;
         
     }
     
     function Bugiclize_createGame(uint gameid) public {
         require(msg.sender == oracle_owner);
-        allgames.push(gameid);
         emit Gamecreated(gameid);
     }
     
@@ -32,10 +30,6 @@ contract usingBugiclize{
         require(msg.sender == oracle_owner);
         gamewinners[gameid] = winner;
         emit Gamefinished(gameid);
-    }
-    
-    function Bugiclize_getstoredGames() public view returns( uint  [] memory){
-        return allgames;
     }
     
     

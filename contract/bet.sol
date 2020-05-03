@@ -44,6 +44,8 @@ contract Betting is usingBugiclize{
 
     //Player[] public players;
     Games[] public games;
+    
+    uint[] public allgames;
 
 
 //++++++++++++++++++++++++ mapping +++++++++++++++++++++++++++
@@ -82,6 +84,7 @@ contract Betting is usingBugiclize{
     function createNewGame( uint _gameid) public returns (uint) {
         require (msg.sender == owner);
         games.push(Games( 0, 0, 0));
+        allgames.push(_gameid);
         betInfo[_gameid] = Games( 0, 0, 0);
         return _gameid;
     }
@@ -105,13 +108,13 @@ contract Betting is usingBugiclize{
     function _payout(uint _gameID) public payable {
         require (msg.sender == owner);
         uint _winner = usingBugiclize.Bugiclize_getResult(_gameID);
-        uint totalAmount = getTotalAmount(_gameID);
+        uint payoutAmount = getTotalAmount(_gameID) - getTotalAmount(_gameID)/ uint(100);
         for (uint256 i = 0; i < addressInfo[_gameID].length; i++){
             address payable betaddress = addressInfo[_gameID][i].playeraddress;
             if (_winner == playerInfo[_gameID][betaddress].teamSelected){
                 uint winnerAmount = getWinnerAmount(_winner, _gameID);
                 uint winparticipation = uint(playerInfo[_gameID][betaddress].amountBet)* uint(100000) /uint(winnerAmount);
-                uint amountWon = uint(winparticipation) * uint(totalAmount) / uint(100000);
+                uint amountWon = uint(winparticipation) * uint(payoutAmount) / uint(100000);
                 betaddress.transfer(amountWon);
 
             }
@@ -145,6 +148,10 @@ contract Betting is usingBugiclize{
         else{
             return betInfo[gameID].totalBetB;
         } 
+    }
+    
+    function getstoredGames() public view returns( uint  [] memory){
+        return allgames;
     }
 
         
