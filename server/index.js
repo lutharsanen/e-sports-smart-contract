@@ -4,9 +4,9 @@ const fs = require("fs");
 const solc = require("solc");
 
 // global vars
-const backendPort = 3000;
-const url = "ws://127.0.0.1:7545";
-const owner = "0xaf0831CaBCcBb78168520f3128171B24607e49A2";
+const serverPort = 3000;
+const blockchain = "ws://127.0.0.1:7545";
+const bettingOwner = "0xbC8089083768a4894FCBB309A2D568f8990C0900";
 
 // Compile smart contract
 let bettingSource = fs.readFileSync("../contract/bet.sol", "utf8");
@@ -39,13 +39,13 @@ bytecode = compiledContract.contracts["bet.sol"]["Betting"].evm.bytecode.object;
 abi = compiledContract.contracts["bet.sol"]["Betting"].abi;
 
 // Connect to Blockchain
-const web3 = new Web3(url);
+const web3 = new Web3(blockchain);
 
 // Create smart contract
 let contract = new web3.eth.Contract(abi, {
   gasPrice: "20000000000",
   gas: 6721975,
-  from: owner,
+  from: bettingOwner,
   data: bytecode,
 });
 
@@ -57,7 +57,9 @@ contract
       value: "1",
     },
     (err, res) => {
-      console.log("tx sent to deploy contract", res);
+      if (err) {
+        console.log(err);
+      }
     }
   )
   .then(function (newContractInstance) {
@@ -75,7 +77,7 @@ contract
       contract.methods
         .createNewGame(createdId)
         .send({
-          from: owner,
+          from: bettingOwner,
           gas: 6721975,
         })
         .then((res) => console.log(res))
@@ -89,7 +91,7 @@ contract
       contract.methods
         ._payout(finishedId)
         .send({
-          from: owner,
+          from: bettingOwner,
           gas: 6721975,
           value: web3.utils.toWei("0.51", "ether"),
         })
@@ -107,14 +109,27 @@ app.use(express.json());
 
 // Endpoints
 app.get("/owner", (req, res) => {
-  res.send(owner);
+  res.send(bettingOwner);
 });
 
 app.get("/abi", (req, res) => {
   res.send(abi);
 });
 
-// get certain game from contract
+// get all game id's from contract
+app.get("/games", (req, res) => {
+  contract.methods
+    .getstoredGames()
+    .call()
+    .then((result) => {
+      res.send(result);
+    })
+    .catch((err) => {
+      res.send(err);
+    });
+});
+
+// get betting info for a single game from contract
 app.get("/games/:id", (req, res) => {
   contract.methods
     .betInfo(req.params.id)
@@ -147,6 +162,6 @@ app.post("/bet", (req, res) => {
     });
 });
 
-app.listen(backendPort, () => {
-  console.log(`started server on port ${backendPort}`);
+app.listen(serverPort, () => {
+  console.log(`started server on port ${serverPort}`);
 });

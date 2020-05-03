@@ -1,0 +1,67 @@
+[
+  {
+    "id": 1,
+    "teamA": {
+      "name": "Copenhagen Flames",
+      "image": "https://cdn.pandascore.co/images/team/image/125775/copenhagen-flames.png"
+    },
+    "teamB": {
+      "name": "GODSENT",
+      "image": "https://cdn.pandascore.co/images/team/image/3280/GODSENT.png"
+    },
+    "start": "2020-05-30 19:30:00",
+    "type": "Best of 3"
+  },
+  {
+    "id": 2,
+    "teamA": {
+      "name": "Dignitas",
+      "image": "https://cdn.pandascore.co/images/team/image/3215/600px_dignitas_2019.png"
+    },
+    "teamB": {
+      "name": "fnatic",
+      "image": "https://cdn.pandascore.co/images/team/image/3217/220px_fnaticlogo_square.png"
+    },
+    "start": "2020-06-01 20:00:00",
+    "type": "Best of 3"
+  },
+  {
+    "id": 3,
+    "teamA": {
+      "name": "NiP",
+      "image": "https://cdn.pandascore.co/images/team/image/3218/NINJAS_IN_PYJAMAS.png"
+    },
+    "teamB": {
+      "name": "ENCE",
+      "image": "https://cdn.pandascore.co/images/team/image/3251/ENCE_ESPORT.png"
+    },
+    "start": "2020-06-01 21:30:00",
+    "type": "Best of 3"
+  },
+  {
+    "id": 4,
+    "teamA": {
+      "name": "Movistar Riders",
+      "image": "https://cdn.pandascore.co/images/team/image/125785/7718.png"
+    },
+    "teamB": {
+      "name": "FaZe",
+      "image": "https://cdn.pandascore.co/images/team/image/3212/FAZE_CLAN.png"
+    },
+    "start": "2020-06-03 21:30:00",
+    "type": "Best of 3"
+  },
+  {
+    "id": 5,
+    "teamA": {
+      "name": "Astralis",
+      "image": "https://cdn.pandascore.co/images/team/image/3209/ASTRALIS.png"
+    },
+    "teamB": {
+      "name": "Vitality",
+      "image": "https://cdn.pandascore.co/images/team/image/3455/VITALITY.png"
+    },
+    "start": "2020-06-04 19:30:00",
+    "type": "Best of 3"
+  }
+]
