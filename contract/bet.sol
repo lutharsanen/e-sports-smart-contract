@@ -89,6 +89,7 @@ contract Betting is usingBugiclize{
         require(!checkPlayerExists(msg.sender,_gameID), 'You are just allowed to bet once!');
         require(msg.value >= minimumBet, 'You need to pay more to be able to use this function');
         require(msg.sender != usingBugiclize.oracle_owner, 'As the data provider, you are not allowed to bet!');
+        require(msg.sender != owner, 'As the owner of the contract, you are not allowed to bet!');
         playerInfo[_gameID][msg.sender].amountBet = msg.value;
         playerInfo[_gameID][msg.sender].teamSelected = _teamSelected;
         addressInfo[_gameID].push(Player(msg.sender));
