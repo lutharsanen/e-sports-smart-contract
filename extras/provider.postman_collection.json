@@ -1,0 +1,143 @@
+{
+	"info": {
+		"_postman_id": "3965ae47-6e9a-4a46-9493-0a900dc4c143",
+		"name": "provider",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "GET games",
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "http://localhost:8080/games",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"games"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "GET games/:id",
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "http://localhost:8080/games/1",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"games",
+						"1"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "POST games",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n\t\"id\": 6,\n\t\"teamA\": {\n\t\t\"name\": \"Luthi's Team\",\n\t\t\"image\": \"https://cdn.pandascore.co/images/team/image/3218/NINJAS_IN_PYJAMAS.png\"\n\t},\n\t\"teamB\": {\n\t\t\"name\": \"Dario's Team\",\n\t\t\"image\": \"https://cdn.pandascore.co/images/team/image/3251/ENCE_ESPORT.png\"\n\t},\n\t\"start\": \"2020-04-20 19:30:00\",\n\t\"type\": \"Best of 3\"\n}"
+				},
+				"url": {
+					"raw": "http://localhost:8080/games/",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"games",
+						""
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "POST games/:id",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n\t\"winner\": 0\n}"
+				},
+				"url": {
+					"raw": "http://localhost:8080/games/1",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"games",
+						"1"
+					]
+				}
+			},
+			"response": []
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"id": "78ec4a06-c46a-442b-9976-ccab24a7894a",
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"id": "aabd7844-a8d6-4ad0-b24d-abc70629951a",
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		}
+	],
+	"protocolProfileBehavior": {}
+}
