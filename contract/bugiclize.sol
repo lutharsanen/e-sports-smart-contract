@@ -30,7 +30,7 @@ contract usingBugiclize{
 
 
     function Bugiclize_getResult(uint gameid) public payable returns(uint){
-        require(msg.value > 0.5 ether, 'Please not, that there is a fee of 0.5 ether');
+        require(msg.value > 0.001 ether, 'Please not, that there is a fee of 0.5 ether');
         return gamewinners[gameid];
     }
 
