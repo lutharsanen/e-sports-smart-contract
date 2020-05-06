@@ -4,7 +4,7 @@ const fs = require("fs");
 const solc = require("solc");
 
 // global vars
-const serverPort = 3000;
+const serverPort = 5000;
 const blockchain = "ws://127.0.0.1:7545";
 const bettingOwner = "0xbC8089083768a4894FCBB309A2D568f8990C0900";
 
@@ -107,59 +107,8 @@ contract
 const app = express();
 app.use(express.json());
 
-// Endpoints
-app.get("/owner", (req, res) => {
-  res.send(bettingOwner);
-});
-
 app.get("/abi", (req, res) => {
   res.send(abi);
-});
-
-// get all game id's from contract
-app.get("/games", (req, res) => {
-  contract.methods
-    .getstoredGames()
-    .call()
-    .then((result) => {
-      res.send(result);
-    })
-    .catch((err) => {
-      res.send(err);
-    });
-});
-
-// get betting info for a single game from contract
-app.get("/games/:id", (req, res) => {
-  contract.methods
-    .betInfo(req.params.id)
-    .call()
-    .then((result) => {
-      res.send(result);
-    })
-    .catch((err) => {
-      res.send(err);
-    });
-});
-
-app.post("/bet", (req, res) => {
-  const { fromAccount, gameId, winner, amount } = req.body;
-
-  contract.methods
-    .bet(winner, gameId)
-    .send({
-      from: fromAccount,
-      value: amount,
-      gas: 6721975,
-    })
-    .then((result) => {
-      console.log(result);
-      res.send(result);
-    })
-    .catch((err) => {
-      console.log(err);
-      res.send(err);
-    });
 });
 
 app.listen(serverPort, () => {

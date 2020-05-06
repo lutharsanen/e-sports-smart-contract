@@ -10,7 +10,7 @@ const matches = require("./matches.json");
 const providerPort = 8080;
 const blockchain = "ws://127.0.0.1:7545";
 const oracleOwner = "0x77d7f9fD92691D56fDd0DBB735eC961840a624A5";
-const oracleContract = "0xA96E0fcE68f381153b3AB83348446b5eDCe1D006";
+const oracleContract = "0xbd1bb29B31950A21c0c112f02462E48602917fdf";
 
 // Connect to the blockchain
 const web3 = new Web3(blockchain);
@@ -45,10 +45,10 @@ const contract = new web3.eth.Contract(abi, oracleContract);
 let db;
 let games_collection;
 
-const uri = "mongodb://localhost:27017/api-provider";
+const uri =
+  "mongodb+srv://dario:Test123@bcon-rkrmy.mongodb.net/test?retryWrites=true&w=majority";
 const client = new MongoClient(uri, {
   useNewUrlParser: true,
-  useUnifiedTopology: true,
 });
 client.connect((err) => {
   if (!err) {
@@ -57,7 +57,11 @@ client.connect((err) => {
     db = client.db("api-provider");
     games_collection = db.collection("games");
 
-    insertingTestGames();
+    // clear collection at startup
+    games_collection.deleteMany({}, () => {
+      // insert dummy games
+      insertingTestGames();
+    });
   }
 });
 
