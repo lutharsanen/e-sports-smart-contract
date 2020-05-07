@@ -10,7 +10,7 @@ const matches = require("./matches.json");
 const providerPort = 8080;
 const blockchain = "ws://127.0.0.1:7545";
 const oracleOwner = "0x77d7f9fD92691D56fDd0DBB735eC961840a624A5";
-const oracleContract = "0xbd1bb29B31950A21c0c112f02462E48602917fdf";
+const oracleContract = "0xE61D3BD9b792F36e8A21ae01CFD4e66a6A909046";
 
 // Connect to the blockchain
 const web3 = new Web3(blockchain);
@@ -95,8 +95,8 @@ app.get("/games/:id", (req, res) => {
 });
 
 app.post("/games", (req, res) => {
-  const { teamA, teamB, start, id } = req.body;
-  insertGame(teamA, teamB, start, id, (result) => {
+  const { teamA, teamB, start, id, type } = req.body;
+  insertGame(teamA, teamB, start, id, type, (result) => {
     res.send(result);
   });
 });
@@ -110,7 +110,7 @@ app.post("/games/:id", (req, res) => {
   });
 });
 
-function insertGame(teamA, teamB, start, id, cb) {
+function insertGame(teamA, teamB, start, id, type, cb) {
   games_collection.insertOne(
     {
       _id: id,
@@ -119,7 +119,7 @@ function insertGame(teamA, teamB, start, id, cb) {
       start: new Date(start),
       end: null,
       winner: null,
-      type: null,
+      type,
     },
     (err, result) => {
       if (!err) {
@@ -176,8 +176,8 @@ function updateGame(id, winner, cb) {
 
 function insertingTestGames() {
   matches.forEach((match) => {
-    const { teamA, teamB, start, id } = match;
-    insertGame(teamA, teamB, start, id, (result) => console.log(result));
+    const { teamA, teamB, start, id, type } = match;
+    insertGame(teamA, teamB, start, id, type, (result) => console.log(result));
   });
 }
 
