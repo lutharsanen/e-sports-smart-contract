@@ -1,10 +1,12 @@
 import Typography from "@material-ui/core/Typography";
-import React from "react";
+import React, {useCallback, useEffect} from "react";
 import makeStyles from "@material-ui/core/styles/makeStyles";
 import Card from "@material-ui/core/Card";
 import CardHeader from "@material-ui/core/CardHeader";
 import CardContent from "@material-ui/core/CardContent";
 import Button from "@material-ui/core/Button";
+import Web3 from "web3";
+import {BETTING_CONTRACT_ABI, BETTING_CONTRACT_ADDRESS} from "./contracts";
 
 
 const useStyles = makeStyles((theme) => ({
@@ -35,7 +37,7 @@ const useStyles = makeStyles((theme) => ({
     }
 }));
 
-function GameCard({game}) {
+function GameCard({game, web3, contract, account}) {
     const classes = useStyles();
     const matchTime = formatDate(game.start);
     const matchType = game.type;
@@ -53,6 +55,18 @@ function GameCard({game}) {
         return date.toLocaleDateString('en-US' ,options);
     }
 
+    function betOnGame(gameId, teamId) {
+        let amount = web3.utils.toWei("0.2", "ether");
+        console.log(gameId)
+        console.log(teamId)
+        console.log(account)
+        console.log(amount)
+        contract.methods.bet(gameId, teamId).send({ from: account, value: amount, gas: 6721975})
+            .once('receipt', (receipt) => {
+                console.log(receipt)
+            })
+    }
+
     return (
         <Card className={classes.root}>
             <CardHeader title={matchTime} subheader={matchType} />
@@ -63,7 +77,7 @@ function GameCard({game}) {
                     <Typography className={classes.padding} variant="body1">
                         {teamA.name}
                     </Typography>
-                    <Button variant="contained" color="primary">
+                    <Button variant="contained" color="primary" onClick={() => betOnGame(game._id, 0)}>
                         Bet on
                     </Button>
                 </div>
@@ -75,7 +89,7 @@ function GameCard({game}) {
                     <Typography className={classes.padding} variant="body1">
                         {teamB.name}
                     </Typography>
-                    <Button variant="contained" color="primary">
+                    <Button variant="contained" color="primary" onClick={() => betOnGame(game._id, 1)}>
                         Bet on
                     </Button>
                 </div>

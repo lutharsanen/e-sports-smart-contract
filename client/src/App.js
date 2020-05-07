@@ -6,14 +6,12 @@ import IconButton from "@material-ui/core/IconButton";
 import Typography from "@material-ui/core/Typography";
 import makeStyles from "@material-ui/core/styles/makeStyles";
 import Container from "@material-ui/core/Container";
-import myMatches from './resources/matches';
 import GameCard from './main/GameCard';
 import Chip from "@material-ui/core/Chip";
 import Slide from "@material-ui/core/Slide";
 import axios from "axios";
 import Web3 from "web3";
 import {BETTING_CONTRACT_ABI, BETTING_CONTRACT_ADDRESS} from "./main/contracts";
-import Button from "@material-ui/core/Button";
 
 const useStyles = makeStyles((theme) => ({
   root: {
@@ -31,21 +29,20 @@ const useStyles = makeStyles((theme) => ({
 
 function App() {
   const classes = useStyles();
-  const games = myMatches.sort((a, b) => new Date(a.begin_at) - new Date(b.begin_at));
   const [state, setState] = useState({
     showUpcomingMatches: true,
     upcomingMatches: [],
     pastMatches: [],
+    bettingContractABI: [],
   });
-  const [account, setAccount] = React.useState(0);
 
   const web3 = new Web3(Web3.givenProvider || "http://localhost:8545");
-  const abi = new web3.eth.Contract(BETTING_CONTRACT_ABI, BETTING_CONTRACT_ADDRESS);
+  const contract = new web3.eth.Contract(BETTING_CONTRACT_ABI, BETTING_CONTRACT_ADDRESS);
+  const [account, setAccount] = React.useState(0);
 
   useEffect(() =>{
-    getAccount();
     getGames();
-    console.log(state.matches)
+    getAccount();
 
   }, [account]);
 
@@ -65,14 +62,16 @@ function App() {
 
   });
 
-
-  function betOnGame() {
-    let amount = web3.utils.toWei("0.51", "ether");
-    abi.methods.bet(1, 1).send({ from: account, value: amount, gas: 6721975})
-        .once('receipt', (receipt) => {
-          console.log(receipt)
+  /*const getABI = useCallback(async () => {
+    axios.get('http://localhost:5000/abi')
+        .then(result => {
+          let bettingContractABI = result.data;
+          console.log(bettingContractABI)
+          setState({...state, bettingContractABI: bettingContractABI});
         })
-  }
+        .catch(error => console.log('Error while loading data ' + error ));
+
+  });*/
 
   function toggleUpcomingMatches() {
     setState({...state, showUpcomingMatches: !state.showUpcomingMatches});
@@ -99,12 +98,6 @@ function App() {
         <Typography className={classes.content} variant="h3" component="h2">
           ESL One: Road to Rio - Europe
         </Typography>
-        <Typography className={classes.content} variant="body2" component="h2">
-          Your Wallet address is {account}
-        </Typography>
-        <Button variant="contained" color="primary" onClick={betOnGame}>
-          Bet on
-        </Button>
 
         <Chip
             color={state.showUpcomingMatches ? 'primary' : 'default'}
@@ -122,7 +115,7 @@ function App() {
             return (
                 <Slide key={game._id} in={state.showUpcomingMatches} direction="right" mountOnEnter unmountOnExit>
                   <div className={classes.content}>
-                    <GameCard game={game} />
+                    <GameCard game={game} web3={web3} contract={contract} account={account} />
                   </div>
                 </Slide>);
           })}
