@@ -37,9 +37,10 @@ const useStyles = makeStyles((theme) => ({
 
 function GameCard({game}) {
     const classes = useStyles();
-    const matchTime = formatDate(game.begin_at);
-    const matchType = formatMatchType(game.match_type, game.number_of_games);
-    const opponents = game.opponents;
+    const matchTime = formatDate(game.start);
+    const matchType = game.type;
+    const teamA = game.teamA;
+    const teamB = game.teamB;
 
     function formatDate(isoDateString) {
         if (!isoDateString) {
@@ -52,23 +53,15 @@ function GameCard({game}) {
         return date.toLocaleDateString('en-US' ,options);
     }
 
-    function formatMatchType (matchType, nrOfGames) {
-        if (matchType !== 'best_of') {
-            return '';
-        } else {
-            return 'Best of ' + nrOfGames;
-        }
-    }
-
     return (
         <Card className={classes.root}>
             <CardHeader title={matchTime} subheader={matchType} />
 
             <CardContent className={classes.cardContent}>
                 <div>
-                    <img className={classes.teamLogo} src={opponents[0].opponent.image_url} />
+                    <img className={classes.teamLogo} src={teamA.image} />
                     <Typography className={classes.padding} variant="body1">
-                        {opponents[0].opponent.name}
+                        {teamA.name}
                     </Typography>
                     <Button variant="contained" color="primary">
                         Bet on
@@ -78,9 +71,9 @@ function GameCard({game}) {
                     Vs.
                 </Typography>
                 <div>
-                    <img className={classes.teamLogo} src={opponents[1].opponent.image_url} />
+                    <img className={classes.teamLogo} src={teamB.image} />
                     <Typography className={classes.padding} variant="body1">
-                        {opponents[1].opponent.name}
+                        {teamB.name}
                     </Typography>
                     <Button variant="contained" color="primary">
                         Bet on

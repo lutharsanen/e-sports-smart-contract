@@ -1,4 +1,4 @@
-import React, {useEffect, useState} from 'react';
+import React, {useCallback, useEffect, useState} from 'react';
 import MenuIcon from '@material-ui/icons/MenuOutlined';
 import AppBar from "@material-ui/core/AppBar";
 import Toolbar from "@material-ui/core/Toolbar";
@@ -10,7 +10,10 @@ import myMatches from './resources/matches';
 import GameCard from './main/GameCard';
 import Chip from "@material-ui/core/Chip";
 import Slide from "@material-ui/core/Slide";
+import axios from "axios";
 import Web3 from "web3";
+import {BETTING_CONTRACT_ABI, BETTING_CONTRACT_ADDRESS} from "./main/contracts";
+import Button from "@material-ui/core/Button";
 
 const useStyles = makeStyles((theme) => ({
   root: {
@@ -31,37 +34,48 @@ function App() {
   const games = myMatches.sort((a, b) => new Date(a.begin_at) - new Date(b.begin_at));
   const [state, setState] = useState({
     showUpcomingMatches: true,
-    address: '',
-    web3: '',
+    upcomingMatches: [],
+    pastMatches: [],
   });
+  const [account, setAccount] = React.useState(0);
+
+  const web3 = new Web3(Web3.givenProvider || "http://localhost:8545");
+  const abi = new web3.eth.Contract(BETTING_CONTRACT_ABI, BETTING_CONTRACT_ADDRESS);
+
+  useEffect(() =>{
+    getAccount();
+    getGames();
+    console.log(state.matches)
+
+  }, [account]);
+
+  const getAccount = useCallback(async () => {
+    let accounts = await web3.eth.getAccounts();
+    setAccount(accounts[0])
+  }, [account]);
+
+  const getGames = useCallback(async () => {
+    axios.get('http://localhost:8080/games')
+        .then(result => {
+          let upcomingMatches = result.data.filter(a => new Date(a.start) > new Date()).sort((a, b) => new Date(a.start) - new Date(b.start));
+          let pastMatches = result.data.filter(a => new Date(a.start) < new Date()).sort((a, b) => new Date(a.start) - new Date(b.start));
+          setState({...state, upcomingMatches: upcomingMatches, pastMatches: pastMatches});
+        })
+        .catch(error => console.log('Error while loading data ' + error ));
+
+  });
+
+
+  function betOnGame() {
+    let amount = web3.utils.toWei("0.51", "ether");
+    abi.methods.bet(1, 1).send({ from: account, value: amount, gas: 6721975})
+        .once('receipt', (receipt) => {
+          console.log(receipt)
+        })
+  }
 
   function toggleUpcomingMatches() {
     setState({...state, showUpcomingMatches: !state.showUpcomingMatches});
-  }
-
-  const ethereum = window.ethereum;
-  // Modern DApp Browsers
-  if (ethereum) {
-    let web3 = new Web3(window.ethereum);
-    try {
-      window.ethereum.enable().then(function() {
-        web3.eth.getAccounts( (error,acc) => {
-          //this.setState is used to edit the state variables
-          setState({...state, address: acc[0]});
-        });
-
-      });
-    } catch(e) {
-      alert('You have enable MetaMask in order to bet on games');
-    }
-  }
-  // Legacy DApp Browsers
-  else if (window.web3) {
-    let web3 = new Web3(window.web3.currentProvider);
-  }
-  // Non-DApp Browsers
-  else {
-    alert('You have to install MetaMask !');
   }
 
   return (
@@ -86,8 +100,11 @@ function App() {
           ESL One: Road to Rio - Europe
         </Typography>
         <Typography className={classes.content} variant="body2" component="h2">
-          Your Wallet address is {state.address}
+          Your Wallet address is {account}
         </Typography>
+        <Button variant="contained" color="primary" onClick={betOnGame}>
+          Bet on
+        </Button>
 
         <Chip
             color={state.showUpcomingMatches ? 'primary' : 'default'}
@@ -96,16 +113,14 @@ function App() {
         />
         <Chip
             color={!state.showUpcomingMatches ? 'primary' : 'default'}
-            label={'Ended Matches'}
+            label={'Past Matches'}
             onClick={toggleUpcomingMatches}
         />
 
         <div className={classes.content}>
-          {games.map((game) => {
-            const show = ((!game.end_at && state.showUpcomingMatches)
-                || (game.end_at && !state.showUpcomingMatches));
+          {state.upcomingMatches.map((game) => {
             return (
-                <Slide key={game.id} in={show} direction="right" mountOnEnter unmountOnExit>
+                <Slide key={game._id} in={state.showUpcomingMatches} direction="right" mountOnEnter unmountOnExit>
                   <div className={classes.content}>
                     <GameCard game={game} />
                   </div>
