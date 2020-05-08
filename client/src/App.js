@@ -52,9 +52,14 @@ function App() {
   }, [account]);
 
   const getAccount = useCallback(async () => {
-    let accounts = await web3.eth.getAccounts();
-    console.log(accounts);
-    setAccount(accounts[4]);
+    let accounts = await window.ethereum.enable();
+    console.log(accounts[0]);
+    setAccount(accounts[0]);
+
+    window.ethereum.on("accountsChanged", function (accounts) {
+      setAccount(accounts[0]);
+      // Time to reload your interface with accounts[0]!
+    });
   }, [account]);
 
   const getGames = useCallback(async () => {
