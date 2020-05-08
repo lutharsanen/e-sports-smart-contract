@@ -10,7 +10,7 @@ const matches = require("./matches.json");
 const providerPort = 8080;
 const blockchain = "ws://127.0.0.1:7545";
 const oracleOwner = "0x77d7f9fD92691D56fDd0DBB735eC961840a624A5";
-const oracleContract = "0x233f661Fe1C47BF5fe877075975485C40A61Bb81";
+const oracleContract = "0x28019ac82EF94a1C1565600F00c35497A7D4bED3";
 
 // Connect to the blockchain
 const web3 = new Web3(blockchain);
@@ -67,11 +67,15 @@ client.connect((err) => {
 
 // Setup express and convert payloads to json automatically
 const app = express();
-app.use(function(req, res, next) {
+app.use(function (req, res, next) {
   res.header("Access-Control-Allow-Origin", "*");
-  res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
+  res.header(
+    "Access-Control-Allow-Headers",
+    "Origin, X-Requested-With, Content-Type, Accept"
+  );
   next();
 });
+app.use(express.json());
 
 // return all games stored off-chain for more information
 app.get("/games", (req, res) => {
@@ -99,6 +103,7 @@ app.get("/games/:id", (req, res) => {
 });
 
 app.post("/games", (req, res) => {
+  console.log(req.body);
   const { teamA, teamB, start, id, type } = req.body;
   insertGame(teamA, teamB, start, id, type, (result) => {
     res.send(result);
