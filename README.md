@@ -1,6 +1,6 @@
 # BCON Challange Task Group Monero
 
-Setup
+## Setup
 
 In order to get everything up and running you can simply follow all the steps listed:
 
