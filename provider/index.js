@@ -10,7 +10,7 @@ const matches = require("./matches.json");
 const providerPort = 8080;
 const blockchain = "ws://127.0.0.1:7545";
 const oracleOwner = "0x77d7f9fD92691D56fDd0DBB735eC961840a624A5";
-const oracleContract = "0x28019ac82EF94a1C1565600F00c35497A7D4bED3";
+const oracleContract = "0xE1d209c53bc2FdC8118D9Be25E49Ef01EA5dD5FB";
 
 // Connect to the blockchain
 const web3 = new Web3(blockchain);
@@ -105,14 +105,14 @@ app.get("/games/:id", (req, res) => {
 app.post("/games", (req, res) => {
   console.log(req.body);
   const { teamA, teamB, start, id, type } = req.body;
-  insertGame(teamA, teamB, start, id, type, (result) => {
+  insertGame(teamA, teamB, start, parseInt(id), type, (result) => {
     res.send(result);
   });
 });
 
 app.post("/games/:id", (req, res) => {
   const { winner } = req.body;
-  const id = req.params.id;
+  const id = parseInt(req.params.id);
 
   updateGame(id, winner, (result) => {
     res.send(result);
@@ -141,6 +141,7 @@ function insertGame(teamA, teamB, start, id, type, cb) {
             gas: 6721975,
           })
           .then((result) => {
+            console.log("created game with id ", id);
             cb(inserted);
           })
           .catch((err) => {
@@ -155,7 +156,7 @@ function insertGame(teamA, teamB, start, id, type, cb) {
 
 function updateGame(id, winner, cb) {
   games_collection.findOneAndUpdate(
-    { _id: parseInt(id) },
+    { _id: id },
     {
       $set: { winner: winner, end: new Date() },
     },
@@ -171,6 +172,7 @@ function updateGame(id, winner, cb) {
             gas: 6721975,
           })
           .then((result) => {
+            console.log("updated game with id ", id);
             cb(updated.value);
           })
           .catch((err) => {
@@ -186,7 +188,9 @@ function updateGame(id, winner, cb) {
 function insertingTestGames() {
   matches.forEach((match) => {
     const { teamA, teamB, start, id, type } = match;
-    insertGame(teamA, teamB, start, id, type, (result) => console.log(result));
+    insertGame(teamA, teamB, start, parseInt(id), type, (result) =>
+      console.log(result)
+    );
   });
 }
 
