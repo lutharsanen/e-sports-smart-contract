@@ -39,7 +39,7 @@ function App() {
     bettingContractABI: [],
   });
 
-  const web3 = new Web3("http://localhost:7545");
+  const web3 = new Web3(window.web3.currentProvider);
   const contract = new web3.eth.Contract(
     BETTING_CONTRACT_ABI,
     BETTING_CONTRACT_ADDRESS
@@ -58,7 +58,6 @@ function App() {
 
     window.ethereum.on("accountsChanged", function (accounts) {
       setAccount(accounts[0]);
-      // Time to reload your interface with accounts[0]!
     });
   }, [account]);
 

@@ -10,7 +10,7 @@ const matches = require("./matches.json");
 const providerPort = 8080;
 const blockchain = "ws://127.0.0.1:7545";
 const oracleOwner = "0x77d7f9fD92691D56fDd0DBB735eC961840a624A5";
-const oracleContract = "0xD4a8a9C40b0D21795495B996A7003e951Ea801E1";
+const oracleContract = "0x0E52cF24eE25779C8E45Ed684B10c47Ee52f0fE5";
 
 // Connect to the blockchain
 const web3 = new Web3(blockchain);
