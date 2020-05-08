@@ -96,7 +96,10 @@ contract
           gas: 6721975,
           value: web3.utils.toWei("0.51", "ether"),
         })
-        .then((res) => console.log(res))
+        .then((res) => {
+          console.log("Payout successful");
+          // console.log(res);
+        })
         .catch((err) => console.log(err));
     });
   })
@@ -106,9 +109,12 @@ contract
 
 // Setup express and convert payloads to json automatically
 const app = express();
-app.use(function(req, res, next) {
+app.use(function (req, res, next) {
   res.header("Access-Control-Allow-Origin", "*");
-  res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
+  res.header(
+    "Access-Control-Allow-Headers",
+    "Origin, X-Requested-With, Content-Type, Accept"
+  );
   next();
 });
 
