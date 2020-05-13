@@ -6,6 +6,7 @@ import CardHeader from "@material-ui/core/CardHeader";
 import CardContent from "@material-ui/core/CardContent";
 import Button from "@material-ui/core/Button";
 import TextField from "@material-ui/core/TextField";
+import CardActions from "@material-ui/core/CardActions";
 
 const useStyles = makeStyles((theme) => ({
   container: {
@@ -21,7 +22,7 @@ const useStyles = makeStyles((theme) => ({
     display: "flex",
     flexDirection: "row",
     alignItems: "center",
-    justifyContent: "space-between",
+    justifyContent: "space-around",
 
     "& > div": {
       display: "flex",
@@ -33,6 +34,13 @@ const useStyles = makeStyles((theme) => ({
   teamLogo: {
     height: "80px",
   },
+  amountInput: {
+    width: "120px",
+    display: "flex",
+    flexDirection: "column",
+    alignItems: "center",
+    justifyContent: "center",
+  }
 }));
 
 function GameCard({ game, web3, onBet }) {
@@ -73,9 +81,9 @@ function GameCard({ game, web3, onBet }) {
     setState({...state, betAmount1: event.target.value});
   }
 
-  /*function toggleBetting(){
+  function toggleBetting(){
     setState({...state, betDisplayed: !state.betDisplayed});
-  }*/
+  }
 
   function betOnGame(gameId, teamId) {
     let amount;
@@ -98,49 +106,59 @@ function GameCard({ game, web3, onBet }) {
           <Typography className={classes.padding} variant="body1">
             {teamA.name}
           </Typography>
-              <TextField
-                  id="bet-team-zero"
-                  label="Amount in ETH"
-                  type="number"
-                  className={classes.padding}
-                  onChange={handleBetAmount0Change}
-                  InputLabelProps={{
-                    shrink: true,
-                  }}
-              />
-              <Button
-                  variant="contained"
-                  color="primary"
-                  onClick={() => betOnGame(game._id, 0)}
-              >
-                Bet
-              </Button>
+          {state.betDisplayed ? <div className={classes.amountInput} >
+            <TextField
+                id="bet-team-zero"
+                label="Amount in ETH"
+                type="number"
+                className={classes.padding}
+                onChange={handleBetAmount0Change}
+                InputLabelProps={{
+                  shrink: true,
+                }}
+            />
+            <Button
+                variant="contained"
+                color="primary"
+                onClick={() => betOnGame(game._id, 0)}
+            >
+              Bet
+            </Button>
+          </div> : null}
         </div>
-        <Typography variant="body1">Vs.</Typography>
+        <div>
+          <Typography variant="body1" className={classes.padding}>Vs.</Typography>
+        </div>
         <div>
           <img className={classes.teamLogo} src={teamB.image} alt={teamB.name}/>
           <Typography className={classes.padding} variant="body1">
             {teamB.name}
           </Typography>
-              <TextField
-                  id="bet-team-one"
-                  label="Amount in ETH"
-                  type="number"
-                  className={classes.padding}
-                  onChange={handleBetAmount1Change}
-                  InputLabelProps={{
-                    shrink: true,
-                  }}
-              />
-              <Button
+          {state.betDisplayed ? <div className={classes.amountInput}>
+            <TextField
+                id="bet-team-one"
+                label="Amount in ETH"
+                type="number"
+                className={classes.padding}
+                onChange={handleBetAmount1Change}
+                InputLabelProps={{
+                  shrink: true,
+                }}
+            />
+            <Button
                 variant="contained"
                 color="primary"
                 onClick={() => betOnGame(game._id, 1)}
-              >
-                Bet
-              </Button>
+            >
+              Bet
+            </Button>
+          </div> : null}
+
             </div>
       </CardContent>
+      <CardActions>
+        <Button size="small"  color="primary" onClick={toggleBetting}>Make a bet</Button>
+      </CardActions>
     </Card>
   );
 }
