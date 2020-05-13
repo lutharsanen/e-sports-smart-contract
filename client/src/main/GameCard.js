@@ -124,6 +124,7 @@ function GameCard({ game, web3, onBet, upcoming}) {
 
   function toggleBetting(){
     setState({...state, betDisplayed: !state.betDisplayed});
+    getAmounts();
   }
 
   function betOnGame(gameId, teamId) {

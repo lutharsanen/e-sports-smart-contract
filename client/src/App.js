@@ -161,12 +161,31 @@ function App() {
                   <GameCard
                     game={game}
                     web3={web3}
-                    contract={contract}
-                    account={account}
+                    upcoming={true}
                     onBet={onBetHandler}
                   />
                 </div>
               </Slide>
+            );
+          })}
+          {state.pastMatches.map((game) => {
+            return (
+                <Slide
+                    key={game._id}
+                    in={!state.showUpcomingMatches}
+                    direction="right"
+                    mountOnEnter
+                    unmountOnExit
+                >
+                  <div className={classes.content}>
+                    <GameCard
+                        game={game}
+                        web3={web3}
+                        upcoming={false}
+                        onBet={onBetHandler}
+                    />
+                  </div>
+                </Slide>
             );
           })}
         </div>
