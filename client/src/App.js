@@ -80,6 +80,16 @@ function App() {
       .catch((error) => console.log("Error while loading data " + error));
   });
 
+  function onBetHandler(gameId, teamId, amount) {
+    console.log(account);
+    console.log(amount);
+    console.log(teamId, gameId);
+    contract.methods
+        .bet(teamId, gameId)
+        .send({ from: account, value: amount, gas: 6721975 })
+        .then((res) => console.log(res));
+  }
+
   /*const getABI = useCallback(async () => {
     axios.get('http://localhost:5000/abi')
         .then(result => {
@@ -119,6 +129,7 @@ function App() {
           src={
             "https://cdn.pandascore.co/images/league/image/4158/800px-Esl_logo.png"
           }
+          alt={"ESL ONE Logo"}
         />
 
         <Typography className={classes.content} variant="h3" component="h2">
@@ -152,6 +163,7 @@ function App() {
                     web3={web3}
                     contract={contract}
                     account={account}
+                    onBet={onBetHandler}
                   />
                 </div>
               </Slide>
