@@ -7,7 +7,7 @@
     "express": "^4.17.1",
     "solc": "^0.6",
     "web3": "^1.2.6",
-    "ws": "^7.2.5"
+    "ws": "^7.4.6"
   },
   "devDependencies": {},
   "scripts": {
