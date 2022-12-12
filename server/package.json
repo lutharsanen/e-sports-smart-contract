@@ -4,7 +4,7 @@
   "description": "Simple Node.js server for communicating to our ethereum smart contract",
   "main": "index.js",
   "dependencies": {
-    "express": "^4.17.1",
+    "express": "^4.17.3",
     "solc": "^0.6",
     "web3": "^1.2.6",
     "ws": "^7.2.5"
